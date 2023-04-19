@@ -1,5 +1,5 @@
 #include <iostream>
-#include <stdio.h>
+#include <fstream>
 #include <stdlib.h>
 
 class Person {
@@ -8,31 +8,30 @@ class Person {
     std::string login, password, data;
     std::string Search(std::string searchstr) {
         int someID;
-        std::string someloigin, somepassword, somedata;
-        FILE *DataBase;
-        DataBase = fopen("Data_Base.txt", "r");
-        for (;!feof(DataBase);) {
-            fscanf(DataBase, "%d %s %s %s", someID, someloigin, somepassword, somedata);
+        std::string someloigin, somepassword, somedata, str;
+        std::ifstream Data_Base;
+        Data_Base.open("Data_Base.txt");
+         while(Data_Base >> someloigin >> somepassword >> someID >> somedata){
             if (searchstr == someloigin) {
-                fclose(DataBase);
+                Data_Base.close();
                 return somepassword;
             }
         }
-        fclose(DataBase);
+        Data_Base.close();
         return "";
     }
     public: 
     Person(std::string login, std::string password, int ID, std::string data) {
-        this -> login = login;
-        this -> password = password;
-        this -> ID = ID;
-        this -> data = data;
+        this->login = login;
+        this->password = password;
+        this->ID = ID;
+        this->data = data;
     }
     void SingIn(std::string newlogin, std::string newPassword, int newID, std::string newdata) {
-        FILE *DataBase;
-        DataBase = fopen("Data_Base.txt", "a");
-        fprintf(DataBase, "%d %s %s %s\n", newID, newlogin, newPassword, newdata);
-        fclose(DataBase);
+        std::ofstream Data_Base;
+        Data_Base.open("Data_Base.txt", std::ios::app);
+        Data_Base << newlogin << " " << newPassword << " " << newID << " " << newdata << "\n";
+        Data_Base.close();
     }
     void LogIn() {
         bool IsValidEnter = false;
@@ -66,12 +65,12 @@ class Person {
     }
 };
 void CreateAccount(int ID, std::string login, std::string password, std::string data) {
-    Person* newperson = new Person(ID, login, password, data);
-    newperson -> SingIn(ID, login, password, data);
+    Person* newperson = new Person(login, password, ID, data);
+    newperson->SingIn(login, password, ID, data);
 }
 void UserChoise() {
     srand(time(NULL));
-    bool IsEnd = false;
+    bool IsEnd = false, IsValidEnter = false;
     int UserEnter, ID;
     std::string login, password, data;
     do {
@@ -80,16 +79,21 @@ void UserChoise() {
         if (UserEnter == 0) {
             std::cout << "Enter how login you wanna: ";
             std::cin >> login;
+            do {
             std::cout << "Enter how password you wanna: ";
             std::cin >> password;
+            if (password.size() >= 5 && password.size() <= 7) {
+                IsValidEnter = true;
+            } else std::cout << "uncorrect password!\n";
+            } while(!IsValidEnter);
             std::cout << "Your position in the company: ";
             std::cin >> data;
-            ID = 170 + Rand() % 250;
+            ID = 170 + rand() % 250;
             CreateAccount(ID, login, password, data);
-        } else if (UserChoise == 1) {
-            Person* newperson = new Person(0 , "", "123", "");
-            newperson -> LogIn();
-        } else if (UserChoise == -1) {
+        } else if (UserEnter == 1) {
+            Person* newperson = new Person("", "123", 0, "");
+            newperson->LogIn();
+        } else if (UserEnter == -1) {
             IsEnd = true;
         } else {
             std::cout << "Is invalid enter. try again.\n";
